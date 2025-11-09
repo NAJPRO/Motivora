@@ -1,0 +1,29 @@
+spring:
+    application:
+        name: Motivora
+
+    datasource:
+        url: jdbc:postgresql://localhost:5432/motivora_db # <--- C'est correct, mais...
+        username: motivora
+        password: motivora
+        driver-class-name: org.postgresql.Driver
+
+    jpa:
+        hibernate:
+            ddl-auto: create-drop
+        show-sql: true
+        open-in-view: true
+        properties:
+            hibernate:
+                format_sql: true
+    mail:
+        host: localhost # <--- Modifier ici aussi !
+        port: 9025
+logging:
+  level:
+    org: 
+        springframework: 
+            security: DEBUG
+server:
+  servlet:
+    context-path: /api
