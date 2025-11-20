@@ -38,6 +38,8 @@ public class ConfigSecurityApplication {
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .requestMatchers("/auth/**").permitAll()
                     .requestMatchers("/test/**").permitAll()
+                    .requestMatchers("/actuator").permitAll()
+                    .requestMatchers("/actuator/**").permitAll()
                     .anyRequest().authenticated()
                 )
             .exceptionHandling(ex -> ex.authenticationEntryPoint(entryPoint))

@@ -46,7 +46,7 @@ public class JwtFilter extends OncePerRequestFilter {
         log.info("Request path: {}", path);
         // Ignore public routes
         System.out.println(path);
-        if (path.startsWith("/auth/") || path.startsWith("/test/")) {
+        if (path.startsWith("/auth/") || path.startsWith("/test/") || path.startsWith("/actuator")) {
             log.info("Public route accessed: {}", path);
             filterChain.doFilter(request, response);
             log.info("Filter chain finished");

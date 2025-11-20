@@ -17,8 +17,17 @@ spring:
             hibernate:
                 format_sql: true
     mail:
-        host: localhost # <--- Modifier ici aussi !
+        host: localhost 
         port: 9025
+        username: no-reply@motivora.com
+        password: Motivora123!
+        properties:
+            mail:
+                smtp:
+                    auth: false
+                    starttls: 
+                        enable: false
+                        required: false
 logging:
   level:
     org: 
@@ -27,3 +36,4 @@ logging:
 server:
   servlet:
     context-path: /api
+

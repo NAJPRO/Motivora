@@ -4,6 +4,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.audin.motivora.dto.request.ResetPasswordDTORequest;
+import com.audin.motivora.service.ResetPasswordService;
+
+import lombok.RequiredArgsConstructor;
 
 import java.util.Collections;
 import java.util.Map;
@@ -17,11 +20,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RestController
 @RequestMapping(path = "reset-password")
 @Validated
+@RequiredArgsConstructor
 public class ResetPasswordController {
-    
+    private final ResetPasswordService resetPasswordService;
     @PostMapping("path")
     public ResponseEntity<Map<String, String>> sendOtpCode(@RequestBody ResetPasswordDTORequest dto) {
-        
+        this.resetPasswordService.sendResetCode(dto.getEmail());
         return ResponseEntity.ok(Collections.singletonMap("message", "An OTP code has been sent to you. Verify your gmail account"));
     }
     
