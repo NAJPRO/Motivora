@@ -11,12 +11,13 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class OtpCodeServiceImpl implements OtpCodeService{
+public class OtpCodeServiceImpl implements OtpCodeService {
     private final OtpCodeRepository otpCodeRepository;
+
     @Override
     public void confirmOtp(OtpCode otpValidation) {
         // TODO Auto-generated method stub
-        
+
     }
 
     @Override

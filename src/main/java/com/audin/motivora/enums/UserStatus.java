@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 public enum UserStatus {
     ACTIVE("Active"),
     INACTIVE("Inactive"),
+    SUSPENDED("Suspended"),
     DELETED("Deleted");
 
     private final String label;

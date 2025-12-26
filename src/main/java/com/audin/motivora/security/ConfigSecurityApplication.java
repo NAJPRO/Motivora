@@ -37,6 +37,7 @@ public class ConfigSecurityApplication {
             .authorizeHttpRequests(authorize -> authorize
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .requestMatchers("/auth/**").permitAll()
+                    .requestMatchers(HttpMethod.POST, "/reset-password/**").permitAll()
                     .requestMatchers("/test/**").permitAll()
                     .requestMatchers("/actuator").permitAll()
                     .requestMatchers("/actuator/**").permitAll()

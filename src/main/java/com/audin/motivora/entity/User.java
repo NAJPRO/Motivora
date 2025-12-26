@@ -3,6 +3,7 @@ package com.audin.motivora.entity;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.TimeZone;
 
 import org.hibernate.annotations.CreationTimestamp;
@@ -24,6 +25,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -58,8 +60,14 @@ public class User implements UserDetails{
 
     // @OneToOne(cascade = CascadeType.ALL)
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "role_id", nullable = false)
+    @JoinColumn(name = "roleId", nullable = false)
     private Role role;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Favorite> favorites;
+
+    @OneToMany(mappedBy = "createdByUser", cascade = CascadeType.DETACH, orphanRemoval = true)
+    private List<Quote> createdQuotes;
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;

@@ -9,7 +9,8 @@ public enum UserRole {
 
     USER("User"),
     ADMIN("Admin"),
-    AUTHOR("Author");
+    MODERATOR("Moderator"),
+    CREATOR("Creator");
 
     private final String label;
 }

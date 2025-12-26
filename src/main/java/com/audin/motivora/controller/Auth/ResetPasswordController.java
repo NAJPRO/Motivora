@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RequiredArgsConstructor
 public class ResetPasswordController {
     private final ResetPasswordService resetPasswordService;
-    @PostMapping("path")
+    @PostMapping("request-otp")
     public ResponseEntity<Map<String, String>> sendOtpCode(@RequestBody ResetPasswordDTORequest dto) {
         this.resetPasswordService.sendResetCode(dto.getEmail());
         return ResponseEntity.ok(Collections.singletonMap("message", "An OTP code has been sent to you. Verify your gmail account"));

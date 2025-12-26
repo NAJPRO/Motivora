@@ -13,6 +13,7 @@ import com.audin.motivora.enums.UserRole;
 import com.audin.motivora.mapper.AuthMapper;
 import com.audin.motivora.security.JwtService;
 import com.audin.motivora.service.AuthService;
+import com.audin.motivora.service.mails.WelcomeMail;
 
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -48,13 +49,20 @@ public class AuthController {
     private final JwtService jwtService;
     private final AuthMapper authMapper;
     private final AuthenticationManager authenticationManager;
+    private final WelcomeMail mailer;
     public static final long MAX_AGE = 60 * 60 * 1000;
 
     @PostMapping(path = "register")
     public ResponseEntity<AuthDTOResponse>  register(@RequestBody @Valid RegisterDTORequest dto, HttpServletResponse response) {
         Role role = new Role();
         role.setName(UserRole.USER);
+
+
         User user = this.authService.register(dto, role);
+        //Envoyer le mail de bienvenu
+        this.mailer.welcome(user);
+
+        // Générer le token et le refreshToken
         Map<String, String> tokens = this.jwtService.generateToken(user.getEmail());
         String accessToken = tokens.get("Bearer");
         String refreshToken = tokens.get("refresh");
@@ -84,12 +92,6 @@ public class AuthController {
         User user = this.authService.findByEmail(dto.getEmail());
         AuthDTOResponse dtoResponse = this.authMapper.authResponse(accessToken, this.authMapper.toDto(user));
         return ResponseEntity.ok(dtoResponse);
-    }
-
-    @PostMapping(path = "logout")
-    public ResponseEntity<Map<String, String>>  logout() {
-        this.jwtService.logout();
-        return ResponseEntity.ok(Collections.singletonMap("message", "Logout successfully"));
     }
 
     @PostMapping(path = "refresh-token")

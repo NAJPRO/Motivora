@@ -28,19 +28,21 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final BCryptPasswordEncoder passwordEncoder;
+
     @Override
     public User register(RegisterDTORequest dto, Role role) {
         User user = this.authMapper.registerEntity(dto);
         // Log des info de l'entity
-            log.info("Registering user: {} | {} | {}", user.getPseudo(), user.getEmail(), role.getName());
-        role = this.roleRepository.findByName(role.getName()).orElseThrow(() -> new EntityExistsException("Role not found"));
-        if(!this.userRepository.findByEmail(user.getEmail()).isPresent()){
+        log.info("Registering user: {} | {} | {}", user.getPseudo(), user.getEmail(), role.getName());
+        role = this.roleRepository.findByName(role.getName())
+                .orElseThrow(() -> new EntityExistsException("Role not found"));
+        if (!this.userRepository.findByEmail(user.getEmail()).isPresent()) {
             user.setPassword(this.passwordEncoder.encode(user.getPassword()));
             user.setRole(role);
             user.setStatus(UserStatus.ACTIVE);
             user = this.userRepository.save(user);
 
-        }else{
+        } else {
             throw new EntityExistsException("This user already exist on database");
         }
         return user;
@@ -49,7 +51,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public User findByEmail(String email) {
         return this.userRepository.findByEmail(email)
-            .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
     }
 
     @Override
