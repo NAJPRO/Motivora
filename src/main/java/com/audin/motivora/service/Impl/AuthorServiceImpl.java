@@ -15,9 +15,11 @@ import com.audin.motivora.service.QuoteService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class AuthorServiceImpl implements AuthorService {
     private final AuthorMapper authorMapper;
     private final AuthorRepository authorRepository;
@@ -77,10 +79,13 @@ public class AuthorServiceImpl implements AuthorService {
     }
 
     private Author findAuthorByIdOrSlug(String idOrSlug) {
+        log.info("Appeler avec " + idOrSlug);
         if (idOrSlug.matches("\\d+")) {
+            log.info("C'EST L'ID");
             return authorRepository.findById(Integer.parseInt(idOrSlug))
                     .orElseThrow(() -> new EntityNotFoundException("Author not found"));
         } else {
+            log.info("SLUG");
             return authorRepository.findBySlug(idOrSlug)
                     .orElseThrow(() -> new EntityNotFoundException("Author not found"));
         }

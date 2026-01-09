@@ -38,7 +38,7 @@ public class ThemeController {
         return ResponseEntity.ok(this.themeService.getAll());
     }
     
-    @GetMapping(path = "/{id}")
+    @GetMapping(path = "/{idOrSlug}")
     public ResponseEntity<ThemeResponse> create(@PathVariable String idOrSlug) {
         return ResponseEntity.ok(this.themeService.create(idOrSlug));
     }
@@ -49,17 +49,17 @@ public class ThemeController {
         return ResponseEntity.ok("Successfuly");
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/{idOrSlug}")
     public ResponseEntity<ThemeResponse> update(@PathVariable String idOrSlug, @RequestBody @Valid ThemeRequest entity) {
         return ResponseEntity.ok(themeService.update(idOrSlug, entity));
     }
     
-    @PutMapping("/{id}/disable")
+    @PutMapping("/{idOrSlug}/disable")
     public ResponseEntity<String> disable(@PathVariable String idOrSlug) {
        themeService.disable(idOrSlug);
         return ResponseEntity.ok("Disable successfuly");
     }
-    @PutMapping("/{id}/enable")
+    @PutMapping("/{idOrSlug}/enable")
     public ResponseEntity<String> enable(@PathVariable String idOrSlug) {
        themeService.enable(idOrSlug);
         return ResponseEntity.ok("Enable successfuly");

@@ -10,7 +10,7 @@ spring:
 
     jpa:
         hibernate:
-            ddl-auto: create-drop
+            ddl-auto: update #create-drop
         show-sql: true
         open-in-view: true
         properties:
@@ -20,7 +20,7 @@ spring:
         host: localhost 
         port: 9025
         username: no-reply@motivora.com
-        password: Motivora123!
+        password: Motivora123
         properties:
             mail:
                 smtp:

@@ -10,6 +10,7 @@ import com.audin.motivora.service.AuthorService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 import java.util.Collections;
 import java.util.Map;
@@ -30,34 +31,33 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/admin/authors")
-@AllArgsConstructor
-@NoArgsConstructor
+@RequiredArgsConstructor
 @Validated
 public class AuthorController {
-    private AuthorService authorService;
+    private final AuthorService authorService;
     @PostMapping
     public ResponseEntity<AuthorResponse> save(@RequestBody @Valid AuthorRequest entity) {
 
         return ResponseEntity.ok(authorService.save(entity));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<AuthorResponse> update(@PathVariable String idOrSlug, @RequestBody AuthorRequest entity) {
+    @PutMapping("/{idOrSlug}")
+    public ResponseEntity<AuthorResponse> update(@PathVariable String idOrSlug, @RequestBody @Valid AuthorRequest entity) {
         return ResponseEntity.ok(authorService.update(idOrSlug, entity));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{idOrSlug}")
     public ResponseEntity<AuthorResponse> show(@PathVariable String idOrSlug) {
         return ResponseEntity.ok(authorService.create(idOrSlug));
     }
 
-    @PutMapping("/{id}/disable")
+    @PutMapping("/{idOrSlug}/disable")
     public ResponseEntity<Map<String, String>> disable(@PathVariable String idOrSlug) {
         authorService.disable(idOrSlug);        
         return new ResponseEntity<>(Collections.singletonMap("message", "Autheur désactivé avec success"), HttpStatus.ACCEPTED);
     }
     
-    @PutMapping("/{id}/enable")
+    @PutMapping("/{idOrSlug}/enable")
     public ResponseEntity<Map<String, String>> enable(@PathVariable String idOrSlug) {
         authorService.enable(idOrSlug);        
         return new ResponseEntity<>(Collections.singletonMap("message", "Autheur activée avec success"), HttpStatus.ACCEPTED);
