@@ -15,9 +15,8 @@ import com.audin.motivora.repository.UserRepository;
 import com.audin.motivora.service.AuthService;
 
 import jakarta.persistence.EntityExistsException;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -35,7 +34,7 @@ public class AuthServiceImpl implements AuthService {
         // Log des info de l'entity
         log.info("Registering user: {} | {} | {}", user.getPseudo(), user.getEmail(), role.getName());
         role = this.roleRepository.findByName(role.getName())
-                .orElseThrow(() -> new EntityExistsException("Role not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Role not found"));
         if (!this.userRepository.findByEmail(user.getEmail()).isPresent()) {
             user.setPassword(this.passwordEncoder.encode(user.getPassword()));
             user.setRole(role);

@@ -16,9 +16,16 @@ public class ThemeSlug {
 
     @PreUpdate
     public void updateSlug(Theme entity) {
+        System.out.println("SLUG BEFORE UPDATE : " + entity.getSlug());
+        System.out.println("NAME BEFORE UPDATE : " + entity.getName());
+
         if (entity.getName() != null &&
                 !entity.getSlug().equals(Slug.toSlug(entity.getName()))) {
             entity.setSlug(Slug.toSlug(entity.getName()));
         }
+        System.out.println("SLUG AFTER UPDATE : " + entity.getSlug());
+        System.out.println("NAME BEFORE UPDATE : " + entity.getName());
+
+
     }
 }

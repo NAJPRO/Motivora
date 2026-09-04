@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import com.audin.motivora.entity.listener.QuoteSlug;
 import com.audin.motivora.enums.QuoteStatus;
 
 import jakarta.persistence.Column;
@@ -12,6 +13,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -29,9 +31,12 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@EntityListeners(QuoteStatus.class)
+@EntityListeners(QuoteSlug.class)
 @Table(name = "quotes", indexes = {
-    @Index(columnList = "slug, authorId, themeId")
+    @Index(name = "idx_quote_slug", columnList = "slug", unique = true),
+    @Index(name = "idx_quote_status", columnList = "status"),
+    @Index(name = "idx_quote_theme", columnList = "themeId"),
+    @Index(name = "idx_quote_author", columnList = "authorId")
 })
 public class Quote {
     @Id
@@ -44,15 +49,15 @@ public class Quote {
     @Column(nullable = false)
     private String content;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "authorId", nullable = true)
     private Author author;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "createdByUserId", nullable = true)
     private User createdByUser;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "themeId", nullable = false)
     private Theme theme;
 

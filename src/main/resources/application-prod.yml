@@ -1,0 +1,72 @@
+# Production profile. Every value that differs between environments comes from the
+# environment; nothing sensitive is committed here.
+spring:
+    datasource:
+        url: ${MOTIVORA_DB_URL}
+        username: ${MOTIVORA_DB_USERNAME}
+        password: ${MOTIVORA_DB_PASSWORD}
+        hikari:
+            maximum-pool-size: ${MOTIVORA_DB_POOL_SIZE:10}
+            minimum-idle: 2
+
+    jpa:
+        hibernate:
+            # Flyway owns the schema; Hibernate only checks that it matches the entities.
+            ddl-auto: validate
+        show-sql: false
+        open-in-view: false
+
+    flyway:
+        enabled: true
+        baseline-on-migrate: false
+
+    mail:
+        host: ${MOTIVORA_MAIL_HOST}
+        port: ${MOTIVORA_MAIL_PORT:587}
+        username: ${MOTIVORA_MAIL_USERNAME}
+        password: ${MOTIVORA_MAIL_PASSWORD}
+        properties:
+            mail:
+                smtp:
+                    auth: true
+                    starttls:
+                        enable: true
+                        required: true
+
+    devtools:
+        restart:
+            enabled: false
+
+server:
+    # Behind a reverse proxy: needed for correct scheme/host in links and for the
+    # client IP the rate limiter keys on.
+    forward-headers-strategy: framework
+    # Mobile clients often sit on slow networks; gzip the JSON.
+    compression:
+        enabled: true
+        mime-types: application/json,application/xml,text/html,text/plain
+        min-response-size: 1024
+    error:
+        include-message: never
+        include-stacktrace: never
+    shutdown: graceful
+
+management:
+    endpoints:
+        web:
+            exposure:
+                include: health,info
+    endpoint:
+        health:
+            show-details: never
+
+logging:
+    level:
+        root: INFO
+        com.audin.motivora: INFO
+        org.hibernate.SQL: WARN
+
+app:
+    cookie:
+        secure: true
+        same-site: None

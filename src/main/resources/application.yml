@@ -10,12 +10,25 @@ spring:
 
     jpa:
         hibernate:
-            ddl-auto: update #create-drop
+            ddl-auto: validate
         show-sql: true
-        open-in-view: true
+        open-in-view: false
         properties:
             hibernate:
                 format_sql: true
+
+    flyway:
+        enabled: true
+        # For pre-existing databases (created previously by ddl-auto): baseline at v1
+        # so the already-present schema is treated as version 1 and V1__init is skipped.
+        # On a fresh/empty database, V1__init is applied normally.
+        baseline-on-migrate: true
+        baseline-version: 1
+    servlet:
+        multipart:
+            max-file-size: 5MB
+            max-request-size: 6MB
+
     mail:
         host: localhost 
         port: 9025
@@ -28,12 +41,77 @@ spring:
                     starttls: 
                         enable: false
                         required: false
+management:
+    endpoints:
+        web:
+            exposure:
+                # Only expose non-sensitive endpoints. Override per-environment if needed.
+                include: health,info
+
 logging:
   level:
-    org: 
-        springframework: 
-            security: DEBUG
+    org:
+        springframework:
+            security: INFO
 server:
   servlet:
     context-path: /api
+  port: 8080
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/plain
+    min-response-size: 1024
+  shutdown: graceful
+
+
+springdoc:
+    api-docs:
+        path: /api-docs
+        # swagger-ui custom path
+    swagger-ui:
+        path: /swagger-ui.html
+
+app:
+    jwt:
+        # Dev default only. MUST be overridden in production via MOTIVORA_JWT_SECRET
+        # (Base64-encoded, >= 256 bits for HS256).
+        secret: ${MOTIVORA_JWT_SECRET:a13c4b5bb2bfcf4ea8134baec33b2fd7008cfb5765836469a3e3c6ff1cfa52ab}
+        # Short-lived: replayed on every request.
+        access-token-ttl: ${MOTIVORA_JWT_ACCESS_TTL:PT30M}
+        # Long-lived: keeps a mobile install signed in without re-asking for the password.
+        # Rotated on every use, with replay detection.
+        refresh-token-ttl: ${MOTIVORA_JWT_REFRESH_TTL:P60D}
+    cors:
+        # Comma-separated list of allowed origins.
+        allowed-origins: ${MOTIVORA_CORS_ORIGINS:http://localhost:3000}
+    cookie:
+        # Set secure=true in production (HTTPS). SameSite: Strict | Lax | None.
+        secure: ${MOTIVORA_COOKIE_SECURE:false}
+        same-site: ${MOTIVORA_COOKIE_SAMESITE:Lax}
+    push:
+        # "expo" delivers through Expo's push service (covers APNs + FCM);
+        # "none" logs instead, which keeps the pipeline usable in development.
+        provider: ${MOTIVORA_PUSH_PROVIDER:none}
+        expo-access-token: ${MOTIVORA_EXPO_ACCESS_TOKEN:}
+        daily-quote:
+            enabled: ${MOTIVORA_DAILY_QUOTE_ENABLED:true}
+
+    storage:
+        # Where uploaded images are written, and the base URL they are served from.
+        location: ${MOTIVORA_STORAGE_LOCATION:uploads}
+        public-base-url: ${MOTIVORA_STORAGE_BASE_URL:}
+        max-image-size: ${MOTIVORA_STORAGE_MAX_IMAGE:5242880}
+    rate-limit:
+        # "memory" counts per instance. Replace with a shared store before running
+        # more than one replica, otherwise N replicas mean an N-fold limit.
+        store: ${MOTIVORA_RATELIMIT_STORE:memory}
+        # Max requests per IP per window for login/register/reset-password endpoints.
+        max-requests: ${MOTIVORA_RATELIMIT_MAX:10}
+        window-seconds: ${MOTIVORA_RATELIMIT_WINDOW:60}
+    # Optional admin bootstrap. Set both values (preferably via env vars
+    # MOTIVORA_ADMIN_EMAIL / MOTIVORA_ADMIN_PASSWORD) to auto-create an ADMIN user
+    # at startup if it does not already exist. Left empty = no admin is created.
+    admin:
+        email: ${MOTIVORA_ADMIN_EMAIL:}
+        password: ${MOTIVORA_ADMIN_PASSWORD:}
 

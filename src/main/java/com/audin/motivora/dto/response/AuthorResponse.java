@@ -7,7 +7,8 @@ public record AuthorResponse(
     String name,
     String slug,
     String bio,
-    String avatarUrl
+    String avatarUrl,
+    boolean isActive
 ) {
 
 }

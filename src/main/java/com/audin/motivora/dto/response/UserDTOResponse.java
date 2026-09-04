@@ -1,12 +1,17 @@
 package com.audin.motivora.dto.response;
 
-import com.audin.motivora.entity.Role;
+import java.time.LocalDateTime;
+
 import com.audin.motivora.enums.UserStatus;
 
 public record UserDTOResponse(
-    Integer id, 
-    String pseudo,  
+    Integer id,
+    String pseudo,
     String email,
+    String avatarUrl,
     UserStatus status,
-    Role role
+    String role,
+    boolean emailVerified,
+    LocalDateTime emailVerifiedAt,
+    LocalDateTime createdAt
 ) {}

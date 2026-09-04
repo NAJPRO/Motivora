@@ -1,5 +1,7 @@
 package com.audin.motivora.entity;
 
+import com.audin.motivora.enums.DevicePlatform;
+
 import java.time.Instant;
 import java.time.LocalDateTime;
 
@@ -8,6 +10,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -47,6 +51,21 @@ public class Jwt {
     private boolean expire;
 
     private Instant expireAt;
+
+    /**
+     * Identifies the client installation this session belongs to (a mobile app
+     * install, a browser). Lets several devices stay logged in simultaneously:
+     * a new login only revokes the sessions of the same device.
+     */
+    @Column(length = 100)
+    private String deviceId;
+
+    @Column(length = 120)
+    private String deviceName;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private DevicePlatform platform;
 
     @Column(updatable = false)
     @CreationTimestamp

@@ -1,6 +1,7 @@
 package com.audin.motivora.utils.seeders;
 
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import com.audin.motivora.entity.Role;
@@ -11,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Component
+@Order(1)
 @Slf4j
 @RequiredArgsConstructor
 public class RoleSeeder implements CommandLineRunner {

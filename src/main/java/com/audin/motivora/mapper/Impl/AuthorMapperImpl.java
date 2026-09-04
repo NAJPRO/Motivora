@@ -20,7 +20,8 @@ public class AuthorMapperImpl implements AuthorMapper {
             author.getName(),
             author.getSlug(),
             author.getBio(),
-            author.getAvatarUrl()
+            author.getAvatarUrl(),
+            author.isActive()
         );
         return response;
     }

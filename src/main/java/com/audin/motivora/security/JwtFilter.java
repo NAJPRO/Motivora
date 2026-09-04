@@ -1,8 +1,11 @@
 package com.audin.motivora.security;
 
-
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.Map;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -11,6 +14,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.audin.motivora.entity.Jwt;
 import com.audin.motivora.service.AuthService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -19,68 +23,75 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Authenticates requests carrying a {@code Bearer} access token.
+ *
+ * A request without a token simply moves on: the authorization rules decide whether the
+ * endpoint is public. A request with a token that is expired, revoked or tampered with is
+ * rejected with a JSON 401 so a mobile HTTP interceptor can trigger its refresh flow.
+ */
 @Service
 @Slf4j
 @AllArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
 
+    private static final String BEARER_PREFIX = "Bearer ";
+
     private final JwtService jwtService;
     private final AuthService authService;
+    private final ObjectMapper objectMapper;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        // Allow preflight requests
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        String token = null;
-        String username = null;
-        UserDetails userDetails = null;
-        boolean isTokenExpire = true;
-
-        String path = request.getServletPath();
-        log.info("Request path: {}", path);
-        // Ignore public routes
-        System.out.println(path);
-        if (path.startsWith("/auth/") || path.startsWith("/test/") || path.startsWith("/reset-password/") || path.startsWith("/actuator")) {
-            log.info("Public route accessed: {}", path);
+        String authorization = request.getHeader(HttpHeaders.AUTHORIZATION);
+        if (authorization == null || !authorization.startsWith(BEARER_PREFIX)) {
             filterChain.doFilter(request, response);
-            log.info("Filter chain finished");
-            log.info("Filter chain finished with status: {}", response.getStatus());
             return;
         }
 
-        final String authorization = request.getHeader("Authorization");
-        if (authorization != null && authorization.startsWith("Bearer ")) {
-            token = authorization.substring(7);
-            isTokenExpire = jwtService.isTokenExpire(token);
-            username = this.jwtService.getUserName(token);
-
-            if (isTokenExpire) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401
+        String token = authorization.substring(BEARER_PREFIX.length());
+        try {
+            if (this.jwtService.isTokenExpire(token)) {
+                this.unauthorized(response, "TOKEN_EXPIRED", "Access token has expired");
                 return;
             }
-        }
-        System.out.println("TOKEN TROUVEEE :: : " + token);
 
-        final Jwt jwtDB = this.jwtService.findByToken(token);
-        if (!isTokenExpire &&
-                username != null &&
-                jwtDB.getUser().getEmail().equals(username) &&
-                SecurityContextHolder.getContext().getAuthentication() == null) {
+            String username = this.jwtService.getUserName(token);
+            Jwt storedToken = this.jwtService.findByToken(token);
 
-            userDetails = this.authService.loadUserByUsername(username);
-            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                    userDetails, null, userDetails.getAuthorities());
-            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+            if (username != null
+                    && storedToken.getUser().getEmail().equals(username)
+                    && SecurityContextHolder.getContext().getAuthentication() == null) {
 
+                UserDetails userDetails = this.authService.loadUserByUsername(username);
+                SecurityContextHolder.getContext().setAuthentication(
+                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities()));
+            }
+        } catch (Exception ex) {
+            // Malformed / revoked / unknown token -> reject without leaking details.
+            log.warn("JWT validation failed: {}", ex.getMessage());
+            this.unauthorized(response, "TOKEN_INVALID", "Access token is invalid");
+            return;
         }
 
         filterChain.doFilter(request, response);
     }
 
+    private void unauthorized(HttpServletResponse response, String code, String message) throws IOException {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setCharacterEncoding("UTF-8");
+        this.objectMapper.writeValue(response.getWriter(), Map.of(
+                "code", HttpServletResponse.SC_UNAUTHORIZED,
+                "error", code,
+                "message", message,
+                "timestamp", LocalDateTime.now().toString()));
+    }
 }

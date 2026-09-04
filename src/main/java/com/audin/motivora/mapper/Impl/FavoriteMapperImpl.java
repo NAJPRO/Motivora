@@ -8,19 +8,25 @@ import org.springframework.stereotype.Component;
 import com.audin.motivora.dto.response.FavoriteResponse;
 import com.audin.motivora.entity.Favorite;
 import com.audin.motivora.mapper.FavoriteMapper;
+import com.audin.motivora.mapper.QuoteMapper;
+
+import lombok.RequiredArgsConstructor;
 
 @Component
-public class FavoriteMapperImpl implements FavoriteMapper{
+@RequiredArgsConstructor
+public class FavoriteMapperImpl implements FavoriteMapper {
 
+    private final QuoteMapper quoteMapper;
+
+    /** The quote is flagged as favourited: a favourite row only exists for its own owner. */
     @Override
     public FavoriteResponse toDto(Favorite entity) {
-        
-        FavoriteResponse response = new FavoriteResponse(
+        return new FavoriteResponse(
             entity.getId(),
-            entity.getUser().getId(),
-            null // Assuming QuoteResponse mapping is handled elsewhere
+            entity.getUser() != null ? entity.getUser().getId() : null,
+            entity.getQuote() != null ? quoteMapper.toResponse(entity.getQuote(), true) : null,
+            entity.getCreatedAt()
         );
-        return response;
     }
 
     @Override
@@ -31,6 +37,5 @@ public class FavoriteMapperImpl implements FavoriteMapper{
         }
         return responses;
     }
-
 
 }

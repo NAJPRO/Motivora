@@ -15,10 +15,10 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.audin.motivora.config.ApiVersionConfig;
 import com.audin.motivora.exception.JwtAuthenticationEntryPoint;
 import com.audin.motivora.service.AuthService;
 
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 
 @Configuration
@@ -36,27 +36,38 @@ public class ConfigSecurityApplication {
             .logout(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(authorize -> authorize
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                    .requestMatchers("/auth/**").permitAll()
-                    .requestMatchers(HttpMethod.POST, "/reset-password/**").permitAll()
-                    .requestMatchers("/test/**").permitAll()
-                    .requestMatchers("/actuator").permitAll()
-                    .requestMatchers("/actuator/**").permitAll()
+                    // Credentials exchange only. The rest of /auth (logout, sessions)
+                    // acts on the caller's own session and requires a valid token.
+                    .requestMatchers(HttpMethod.POST,
+                            v("/auth/login"), v("/auth/register"), v("/auth/refresh-token"))
+                        .permitAll()
+                    .requestMatchers(HttpMethod.POST, v("/reset-password/**")).permitAll()
+                    .requestMatchers(HttpMethod.POST, v("/verify-email/**")).permitAll()
+                    .requestMatchers("/actuator", "/actuator/health", "/actuator/health/**", "/actuator/info")
+                        .permitAll()
+                    .requestMatchers("/v3/api-docs/**", "/api-docs/**", "/swagger-ui/**").permitAll()
+                    // Public catalogue: what the mobile app browses before signing in.
+                    .requestMatchers(HttpMethod.GET, v("/quotes/**"), v("/themes/**"), v("/authors/**"))
+                        .permitAll()
+                    .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
+                    // Administration requires the ADMIN role
+                    .requestMatchers(v("/admin/**")).hasRole("ADMIN")
                     .anyRequest().authenticated()
                 )
             .exceptionHandling(ex -> ex.authenticationEntryPoint(entryPoint))
-            // .exceptionHandling(ex -> ex
-            //         .authenticationEntryPoint((request, response, authException) -> {
-            //             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
-            //         }))
-            .sessionManagement(
-                session -> session
-                    .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                    .maximumSessions(1)
-                    .maxSessionsPreventsLogin(false)
-                )
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return httpSecurity.build();
+    }
+
+    /**
+     * Every controller is served under the version prefix (see {@code ApiVersionConfig}),
+     * and {@code LegacyApiVersionFilter} rewrites unversioned URLs before this chain runs,
+     * so matchers only need the versioned form.
+     */
+    private static String v(String path) {
+        return "/" + ApiVersionConfig.CURRENT_VERSION + path;
     }
 
     @Bean

@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 import com.audin.motivora.dto.request.ThemeRequest;
 import com.audin.motivora.dto.response.ThemeResponse;
 import com.audin.motivora.entity.Theme;
-import com.audin.motivora.mapper.QuoteMapper;
 import com.audin.motivora.mapper.ThemeMapper;
 
 @Component
@@ -26,22 +25,23 @@ public class ThemeMapperImpl implements ThemeMapper {
 
     @Override
     public ThemeResponse toResponse(Theme theme) {
-        QuoteMapper quoteMapper = new QuoteMapperImpl();
-        ThemeResponse response = new ThemeResponse(
-            theme.getId(),
-            theme.getName(),
-            theme.getDescription(),
-            theme.getColor(),
-            theme.getImageUrl(),
-            quoteMapper.toResponse(theme.getQuotes())
-        );
-        return response;
+        if (theme == null) {
+            return null;
+        }
+        return new ThemeResponse(
+                theme.getId(),
+                theme.getSlug(),
+                theme.getName(),
+                theme.getDescription(),
+                theme.getColor(),
+                theme.getImageUrl(),
+                theme.isActive());
     }
 
     @Override
     public List<ThemeResponse> toResponse(List<Theme> themes) {
         ArrayList<ThemeResponse> responses = new ArrayList<>();
-        for( Theme theme : themes ) {
+        for (Theme theme : themes) {
             responses.add(this.toResponse(theme));
         }
         return responses;
@@ -49,12 +49,23 @@ public class ThemeMapperImpl implements ThemeMapper {
 
     @Override
     public Theme toEntityUpdate(Theme theme, ThemeRequest dto) {
-        if(!theme.getName().equals(dto.getName()))
+
+        if (dto.getName() != null && !dto.getName().equals(theme.getName())) {
             theme.setName(dto.getName());
-        if(!theme.getDescription().equals(dto.getDescription()))
+        }
+
+        if (dto.getDescription() != null) {
             theme.setDescription(dto.getDescription());
-        if(!theme.getColor().equals(dto.getColor()))
+        }
+
+        if (dto.getColor() != null && !dto.getColor().equals(theme.getColor())) {
             theme.setColor(dto.getColor());
+        }
+
+        if (dto.getImageUrl() != null) {
+            theme.setImageUrl(dto.getImageUrl());
+        }
+
         return theme;
     }
 

@@ -3,7 +3,9 @@ package com.audin.motivora.entity;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.TimeZone;
 
 import org.hibernate.annotations.CreationTimestamp;
@@ -24,6 +26,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
@@ -55,6 +59,12 @@ public class User implements UserDetails{
 
     private LocalDateTime emailVerifiedAt;
 
+    @Column(length = 500)
+    private String avatarUrl;
+
+    /** When the user deleted their own account; their data is anonymised at that point. */
+    private LocalDateTime deletedAt;
+
     @Enumerated(EnumType.STRING)
     private UserStatus status;
 
@@ -68,6 +78,14 @@ public class User implements UserDetails{
 
     @OneToMany(mappedBy = "createdByUser", cascade = CascadeType.DETACH, orphanRemoval = true)
     private List<Quote> createdQuotes;
+
+    /** Themes the user follows; an empty set means "any theme". */
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "user_followed_themes",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "theme_id"))
+    private Set<Theme> followedThemes = new HashSet<>();
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
@@ -93,7 +111,7 @@ public class User implements UserDetails{
 
     @Override
     public boolean isAccountNonLocked() {
-        return UserDetails.super.isAccountNonLocked();
+        return this.status != UserStatus.SUSPENDED;
     }
 
     @Override
@@ -103,7 +121,7 @@ public class User implements UserDetails{
 
     @Override
     public boolean isEnabled() {
-        return UserDetails.super.isEnabled();
+        return this.status == UserStatus.ACTIVE;
     }
 
 }

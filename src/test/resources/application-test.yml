@@ -1,0 +1,31 @@
+# Integration-test profile: a throwaway PostgreSQL from Testcontainers, no outbound mail,
+# no scheduled jobs firing mid-test.
+spring:
+    flyway:
+        enabled: true
+        baseline-on-migrate: false
+    jpa:
+        hibernate:
+            ddl-auto: validate
+        show-sql: false
+    mail:
+        host: localhost
+        port: 3025
+
+app:
+    jwt:
+        secret: dGVzdC1zZWNyZXQtZm9yLWludGVncmF0aW9uLXRlc3RzLW9ubHktMjU2LWJpdHM=
+        access-token-ttl: PT30M
+        refresh-token-ttl: P60D
+    push:
+        provider: none
+        daily-quote:
+            enabled: false
+    admin:
+        email: ""
+        password: ""
+
+logging:
+    level:
+        root: WARN
+        com.audin.motivora: INFO

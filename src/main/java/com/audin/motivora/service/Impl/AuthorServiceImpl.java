@@ -2,6 +2,10 @@ package com.audin.motivora.service.Impl;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.audin.motivora.dto.request.AuthorRequest;
@@ -13,7 +17,7 @@ import com.audin.motivora.service.AuthorService;
 import com.audin.motivora.service.QuoteService;
 
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -58,8 +62,16 @@ public class AuthorServiceImpl implements AuthorService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<AuthorResponse> getAll() {
         return authorMapper.toResponse(authorRepository.findAll());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<AuthorResponse> getAll(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return authorRepository.findAll(pageable).map(authorMapper::toResponse);
     }
 
     @Override
@@ -78,17 +90,31 @@ public class AuthorServiceImpl implements AuthorService {
         return authorMapper.toResponse(author);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Page<AuthorResponse> getAllActive(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "name"));
+        return this.authorRepository.findByIsActiveTrue(pageable).map(this.authorMapper::toResponse);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public AuthorResponse getActive(String idOrSlug) {
+        Author author = idOrSlug.matches("\\d+")
+                ? this.authorRepository.findByIdAndIsActiveTrue(Integer.parseInt(idOrSlug))
+                        .orElseThrow(() -> new EntityNotFoundException("Author not found"))
+                : this.authorRepository.findBySlugAndIsActiveTrue(idOrSlug)
+                        .orElseThrow(() -> new EntityNotFoundException("Author not found"));
+        return this.authorMapper.toResponse(author);
+    }
+
     private Author findAuthorByIdOrSlug(String idOrSlug) {
-        log.info("Appeler avec " + idOrSlug);
         if (idOrSlug.matches("\\d+")) {
-            log.info("C'EST L'ID");
-            return authorRepository.findById(Integer.parseInt(idOrSlug))
-                    .orElseThrow(() -> new EntityNotFoundException("Author not found"));
-        } else {
-            log.info("SLUG");
-            return authorRepository.findBySlug(idOrSlug)
+            return this.authorRepository.findById(Integer.parseInt(idOrSlug))
                     .orElseThrow(() -> new EntityNotFoundException("Author not found"));
         }
+        return this.authorRepository.findBySlug(idOrSlug)
+                .orElseThrow(() -> new EntityNotFoundException("Author not found"));
     }
 
 }

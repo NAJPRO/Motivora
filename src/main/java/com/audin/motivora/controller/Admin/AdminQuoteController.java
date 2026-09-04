@@ -3,28 +3,38 @@ package com.audin.motivora.controller.Admin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.audin.motivora.dto.response.common.MessageResponse;
+import com.audin.motivora.dto.response.common.PageResponse;
 import com.audin.motivora.dto.request.QuoteRequest;
 import com.audin.motivora.dto.response.QuoteResponse;
 import com.audin.motivora.service.QuoteService;
 
 import jakarta.validation.Valid;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 @RequestMapping("admin/quotes")
-@AllArgsConstructor
-@NoArgsConstructor
+@RequiredArgsConstructor
 @Validated
 public class AdminQuoteController {
-    private QuoteService quoteService;
+    private final QuoteService quoteService;
+
+    @GetMapping
+    public ResponseEntity<PageResponse<QuoteResponse>> index(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String status) {
+        return ResponseEntity.ok(PageResponse.from(quoteService.getAllQuotesForAdmin(status, page, size)));
+    }
 
     @PostMapping
     public ResponseEntity<QuoteResponse> save(@RequestBody @Valid QuoteRequest entity) {
@@ -38,14 +48,14 @@ public class AdminQuoteController {
     }
 
     @PutMapping("/{idOrSlug}/disable")
-    public ResponseEntity<String> disable(@PathVariable String idOrSlug) {
+    public ResponseEntity<MessageResponse> disable(@PathVariable String idOrSlug) {
         quoteService.disable(idOrSlug);
-        return ResponseEntity.ok("Thème désactivé avec succès");
+        return ResponseEntity.ok(MessageResponse.of("Motivation désactivée avec succès"));
     }
 
     @PutMapping("/{idOrSlug}/enable")
-    public ResponseEntity<String> enable(@PathVariable String idOrSlug) {
+    public ResponseEntity<MessageResponse> enable(@PathVariable String idOrSlug) {
         quoteService.enable(idOrSlug);
-        return ResponseEntity.ok("Thème activé avec succès");
+        return ResponseEntity.ok(MessageResponse.of("Motivation activée avec succès"));
     }
 }

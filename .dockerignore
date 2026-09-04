@@ -1,0 +1,9 @@
+target/
+postgres-data/
+uploads/
+.git/
+.github/
+.mvn/wrapper/maven-wrapper.jar
+*.md
+.vscode/
+.idea/

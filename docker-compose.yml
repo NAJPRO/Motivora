@@ -27,7 +27,7 @@ services:
 
 
   smtp4dev:
-    container_name: smtp4dev
+    container_name: smtp4dev_motivora
     image: rnwood/smtp4dev:v3
     restart: always
     ports:
@@ -42,7 +42,7 @@ services:
       - '143:143'
     volumes:
       # This is where smtp4dev stores the database..
-        - smtp4dev-data:/smtp4dev
+        - smtp4dev-data:/smtp4dev_motivora
 
 volumes:
   postgres-data:
